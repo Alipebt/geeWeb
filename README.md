@@ -2,6 +2,67 @@
 
 ## 1 http协议
 
+HTTP（Hypertext Transfer Protocol）是一种用于传输超媒体文件（例如HTML，图片等）的应用层协议。它基于请求/响应模式，客户端向服务器发送一个HTTP请求并接收服务器返回的HTTP响应。
+
+HTTP请求由三个部分组成：请求行、消息报头和请求正文。以下是HTTP请求的结构：
+
+DiffCopyInsertNew
+
+```
+[请求行]
+[消息报头]
+[请求正文]
+```
+
+- **请求行** 包含请求方法、URL和HTTP协议版本。
+
+  DiffCopyInsertNew
+
+  ```
+  GET /index.html HTTP/1.1
+  ```
+
+- **消息报头** 包括若干行属性信息，每行由属性名和属性值组成，用冒号分隔。消息报头也可以为空。
+
+  DiffCopyInsertNew
+
+  ```
+  Host: www.example.com
+  User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3
+  Accept-Encoding: gzip, deflate, sdch
+  ```
+
+- **请求正文** 可选，包含任意有效载荷数据（通常在POST请求中使用）。
+
+同样，HTTP响应也由三个部分组成：状态行、消息报头和响应正文。以下是HTTP响应的结构：
+
+DiffCopyInsertNew
+
+```
+[状态行]
+[消息报头]
+[响应正文]
+```
+
+- **状态行** 包含HTTP协议版本、状态码和状态描述。
+
+  DiffCopyInsertNew
+
+  ```
+  HTTP/1.1 200 OK
+  ```
+
+- **消息报头** 包括若干行属性信息，每行由属性名和属性值组成，用冒号分隔。消息报头也可以为空。
+
+  DiffCopyInsertNew
+
+  ```
+  Content-Type: text/html;charset=utf-8
+  Server: Apache/2.4.23 (Win32)
+  ```
+
+- **响应正文** 可选，包含任意有效载荷数据（通常是HTML页面或其他类型文件的内容）。
+
 ## 2 net/http库
 
 HTTP（Hypertext Transfer Protocol，超文本传输协议）是一个用于传输超媒体文档的应用层协议。一个 HTTP 请求-响应事务通常由以下几部分组成：
