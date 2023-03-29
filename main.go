@@ -1,21 +1,26 @@
 package main
 
 import (
-	"fmt"
 	"gee"
+	"net/http"
 )
 
 func main() {
 	r := gee.New()
 
 	r.GET("/", func(c *gee.Context) {
-		fmt.Fprintf(c.Writer, "URL.Path = %q\n", c.Req.URL.Path)
+		c.HTMI(http.StatusOK, "<h1>Hello Alipebt</h1>")
 	})
 
 	r.GET("/hello", func(c *gee.Context) {
-		for k, v := range c.Req.Header {
-			fmt.Fprintf(c.Writer, "Header[%q] = %q\n", k, v)
-		}
+		c.String(http.StatusOK, "Hello %s, you`re at %s\n", c.Query("name"), c.Path)
+	})
+
+	r.POST("/login", func (c *gee.Context)  {
+		c.JSON(http.StatusOK, gee.H{
+			"username": c.PostFrom("username"),
+			"password": c.PostFrom("password"),
+		})
 	})
 
 	r.Run(":9999")

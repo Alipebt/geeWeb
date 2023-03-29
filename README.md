@@ -1,8 +1,41 @@
 # geeWeb
 
-## 1 net/http库
+## 1 http协议
 
-### 1.1 url
+## 2 net/http库
+
+HTTP（Hypertext Transfer Protocol，超文本传输协议）是一个用于传输超媒体文档的应用层协议。一个 HTTP 请求-响应事务通常由以下几部分组成：
+
+1. 起始行（Start Line）：
+
+起始行包括请求行和响应行两种格式。
+
+- 请求行：包括 HTTP 方法、请求 URL 和协议版本。例如："GET /index.html HTTP/1.1"
+- 响应行：包括协议版本、状态码和状态短语。例如："HTTP/1.1 200 OK"
+
+2. 头部字段（Header Fields）：
+
+头部字段包含了若干个键值对，每个键值对之间通过冒号分隔，多个键值对以换行符隔开。常见的头部字段有：
+
+- `Host`：指示要访问的主机名；
+- `User-Agent`：指示客户端类型，如浏览器、爬虫等；
+- `Content-Type`：指示请求或响应消息体的类型；
+- `Accept`：指示客户端能够接受的内容类型；
+- `Set-Cookie`：用于在客户端设置 Cookie 等。
+
+3. 空行（空白行）：
+
+空行是 HTTP 头部与消息体之间必须加入的隔行符，表示已经结束了头部字段的传输。
+
+4. 消息体（Message Body）：
+
+消息体是可选的，它包含了由上述头部字段描述的内容信息。HTTP 消息体可包含文本、HTML、XML、JSON、二进制等数据，取决于 Content-Type 头部字段。
+
+以上是 HTTP 请求和响应的基本组成部分。需要注意的是，HTTP 是一个无状态协议，每个请求都在一个独立的事务里进行处理，服务器并不会保留之前请求的任何信息。为了解决这个问题，常用的方式是使用 Cookie 或者 Token 等机制记录用户状态信息。
+
+另外，HTTPS（Hypertext Transfer Protocol Secure）是一个基于 HTTP 协议的加密传输协议，其结构与 HTTP 协议类似，但具有安全性更高的特点。
+
+### 2.1 url
 
 是用于标识互联网上某个资源的地址。它通常由多个部分组成，例如：
 
@@ -10,9 +43,9 @@
 https://www.example.com:8080/path/to/myfile.html?key1=valu
 ```
 
-### 1.2 接口
+### 2.2 接口
 
-#### 1.2.1 `http.HandleFunc()` 用于将HTTP请求路由到指定的处理器函数。该函数接受两个参数：一个字符串类型的路径和一个 `func(http.ResponseWriter, *http.Request)` 类型的处理器函数。
+#### 2.2.1 `http.HandleFunc()` 用于将HTTP请求路由到指定的处理器函数。该函数接受两个参数：一个字符串类型的路径和一个 `func(http.ResponseWriter, *http.Request)` 类型的处理器函数。
 
 `http.ResponseWriter` 接口用于构建 HTTP 响应。
 
@@ -23,21 +56,25 @@ https://www.example.com:8080/path/to/myfile.html?key1=valu
 - `Header`：请求头。
 - `Body`：请求体（如果有）。
 
-#### 1.2.2 `http.ListenAndServe()` 启动HTTP服务器并监听来自客户端的请求。
+#### 2.2.2 `http.ListenAndServe()` 启动HTTP服务器并监听来自客户端的请求。
 
 `http.ListenAndServe()`函数的第二个参数是一个`Handler` 接口类型，它定义了对于任何进入的 HTTP 请求应该执行哪些操作，通常使用`nil`值表示采用默认的处理器。如果需要自定义处理器，则可以传递实现了 `Handler` 接口的结构体指针，并在该结构体中实现所需的逻辑。
 
-#### 1.2.3 http.Request 中的FormValue()函数
+#### 2.2.3 http.Request 中的FormValue()函数
 
 `FormValue()`函数会返回一个字符串类型的值，该值为参数key对应的表单数据的第一个值。
 
-#### 1.2.4 http.Request 中的FormValue()函数
+#### 2.2.4 http.Request 中的FormValue()函数
 
 `Query()`函数会返回一个`url.Values`类型的值，该类型实际上是一个`map[string][]string`类型的别名，可以方便地获取和处理URL的查询参数。Get方法则可以从这个map中获取指定key对应的第一个值，如果没有找到指定的key，则会返回空字符串。
 
-## 2 geeWeb
+#### 2.2.5 http.POST()
 
-### 2.1 gee.go
+`http.Post()` 函数发送的数据将会放入 HTTP 请求的消息体中。
+
+## 3 geeWeb
+
+### 3.1 gee.go
 
 ```go
 type HandlerFunc func(http.ResponseWriter, *http.Request)
@@ -83,9 +120,9 @@ func (engine *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 该方法首先从请求（`req`）中获取1）HTTP 请求方法（`Method`）和URI 路径（`URL.Path`），然后将二者组合成一个 `key` 字符串，用于在存储路由处理程序的映射表中查找对应的处理函数。
 
-### 2.2 context.go
+### 3.2 context.go
 
-#### 2.2.1 Context结构体 
+#### 3.2.1 Context结构体 
 
 在`context.go`中设计一个`Context`结构体，其中封装了`http.ResponseWriter`和`http.Request`等。`Context` 随着每一个请求的出现而产生，请求的结束而销毁，和当前请求强相关的信息都应由 `Context` 承载。
 
@@ -116,7 +153,7 @@ type Context struct {
 
 通过Context对象，我们可以轻松地实现多种并发模型，如Goroutine之间共享数据、异步调用等。同时，在并发场景下，Context对象还能起到传递请求相关信息的作用，比如在一个请求被多个Goroutine同时处理时，我们可以通过Context来确保所有协程使用的是同一个请求对象。
 
-#### 2.2.2 Context方法实现
+#### 3.2.2 Context方法实现
 
 ```go
 func (c *Context) PostFrom(key string) string {
@@ -128,11 +165,8 @@ func (c *Context) Query(key string) string {
 }
 ```
 
-HTTP中的 POST 和 GET 方法都是用于客户端和服务器之间交换数据的方法。
-
-HTTP POST 请求通常用于向服务器提交数据。在 Web 应用程序中，经常使用 POST 请求来提交表单数据，上传文件，执行数据库操作等。POST 请求可以将请求体中携带的数据传递给服务器处理，并根据需要作出响应。
-
-而 HTTP GET 请求通常用于从服务器请求数据。在 Web 应用程序中，GET 请求可以在 URL 中附加查询字符串参数，以获取服务器上特定资源的数据。GET 请求在请求到达服务器时会被解析，然后服务器可以将请求结果返回给客户端。
+- `req.FormValue()` 用于获取表单（POST 或 PUT）提交的参数值。在 HTTP 请求中，表单参数通常被编码为 x-www-form-urlencoded 格式，可以使用 `req.FormValue()` 方法获取这些参数值。如果对应的参数不存在或为空，则该方法返回空字符串。
+- `req.URL.Query()` 用于获取 URL 查询参数。在 HTTP 请求中，URL 可以包含查询字符串，类似于 `http://example.com/path?name=value&foo=bar` 。我们可以使用 `req.URL.Query()` 方法来获取这个查询字符串中所有参数的值，并以一个 map 的形式进行返回。
 
 ```go
 func (c *Context) Status(code int) {
