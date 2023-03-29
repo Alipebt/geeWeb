@@ -6,8 +6,6 @@ HTTP（Hypertext Transfer Protocol）是一种用于传输超媒体文件（例�
 
 HTTP请求由三个部分组成：请求行、消息报头和请求正文。以下是HTTP请求的结构：
 
-DiffCopyInsertNew
-
 ```
 [请求行]
 [消息报头]
@@ -16,15 +14,11 @@ DiffCopyInsertNew
 
 - **请求行** 包含请求方法、URL和HTTP协议版本。
 
-  DiffCopyInsertNew
-
   ```
   GET /index.html HTTP/1.1
   ```
 
 - **消息报头** 包括若干行属性信息，每行由属性名和属性值组成，用冒号分隔。消息报头也可以为空。
-
-  DiffCopyInsertNew
 
   ```
   Host: www.example.com
@@ -36,8 +30,6 @@ DiffCopyInsertNew
 
 同样，HTTP响应也由三个部分组成：状态行、消息报头和响应正文。以下是HTTP响应的结构：
 
-DiffCopyInsertNew
-
 ```
 [状态行]
 [消息报头]
@@ -46,15 +38,11 @@ DiffCopyInsertNew
 
 - **状态行** 包含HTTP协议版本、状态码和状态描述。
 
-  DiffCopyInsertNew
-
   ```
   HTTP/1.1 200 OK
   ```
 
 - **消息报头** 包括若干行属性信息，每行由属性名和属性值组成，用冒号分隔。消息报头也可以为空。
-
-  DiffCopyInsertNew
 
   ```
   Content-Type: text/html;charset=utf-8
