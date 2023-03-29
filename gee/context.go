@@ -11,19 +11,19 @@ type H map[string]interface{}
 type Context struct {
 	// origin object
 	Writer http.ResponseWriter
-	Req *http.Request
+	Req    *http.Request
 	// request info
-	Path string
+	Path   string
 	Method string
 	// response info
 	StatusCode int
 }
 
-func newContext(w http.ResponseWriter,req *http.Request) *Context{
+func newContext(w http.ResponseWriter, req *http.Request) *Context {
 	return &Context{
 		Writer: w,
-		Req: req,
-		Path: req.URL.Path,
+		Req:    req,
+		Path:   req.URL.Path,
 		Method: req.Method,
 	}
 }
@@ -65,7 +65,7 @@ func (c *Context) Data(code int, data []byte) {
 	c.Writer.Write(data)
 }
 
-func (c *Context) HTMI(code int,html string) {
+func (c *Context) HTMI(code int, html string) {
 	c.SetHeader("Content-Type", "text/html")
 	c.Status(code)
 	c.Writer.Write([]byte(html))
