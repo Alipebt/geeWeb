@@ -9,7 +9,7 @@ func main() {
 	r := gee.New()
 
 	r.GET("/", func(c *gee.Context) {
-		c.HTMI(http.StatusOK, "<h1>Hello Alipebt</h1>")
+		c.HTML(http.StatusOK, "<h1>Hello Alipebt</h1>")
 	})
 
 	r.GET("/hello", func(c *gee.Context) {

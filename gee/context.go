@@ -65,7 +65,7 @@ func (c *Context) Data(code int, data []byte) {
 	c.Writer.Write(data)
 }
 
-func (c *Context) HTMI(code int, html string) {
+func (c *Context) HTML(code int, html string) {
 	c.SetHeader("Content-Type", "text/html")
 	c.Status(code)
 	c.Writer.Write([]byte(html))
