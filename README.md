@@ -113,7 +113,7 @@ https://www.example.com:8080/path/to/myfile.html?key1=valu
 
 `FormValue()`函数会返回一个字符串类型的值，该值为参数key对应的表单数据的第一个值。
 
-#### 2.2.4 http.Request 中的FormValue()函数
+#### 2.2.4 http.Request 中的FormQuery()函数
 
 `Query()`函数会返回一个`url.Values`类型的值，该类型实际上是一个`map[string][]string`类型的别名，可以方便地获取和处理URL的查询参数。Get方法则可以从这个map中获取指定key对应的第一个值，如果没有找到指定的key，则会返回空字符串。
 
@@ -271,3 +271,32 @@ s2 := fmt.Sprintf("Value: %d", 42) // s2 = "Value: 42"
 第二个例子中，`"Value: %d"` 是字符串格式化模板，数字 `42` 是要填充到模板中的参数之一。
 
 注意到在 `String` 方法中，最后使用了 `values...` 语法，将该可变参数 `values` 展开为多个参数，这是因为 `Sprintf` 函数所需的是一个不定数量的 `interface{}` 参数而不是一个切片，因此需要使用 `...` 语法展开参数。
+
+### 3.3 trie.go
+
+#### 3.3.1 前缀树
+
+```shell
+/
+├── /:lang
+│   ├── /intro
+│   ├── /tutorial
+│   └── /doc
+├── /about
+└── /p
+    ├── /blog
+	└── /related
+```
+
+
+
+```go
+type node struct {
+	pattern string // 待匹配路由，如 /p/:lang
+	part	string // 路由中的一部分，如 :lang
+	child	[]*node // 子节点，如[doc,tutorial,intro]
+	isWild	bool // 是否精确匹配，part 含有 ：或 * 时为true
+}
+```
+
+为了实现动态路由匹配，加上了`isWild`这个参数。即当我们匹配 `/p/go/doc/`这个路由时，第一层节点，`p`精准匹配到了`p`，第二层节点，`go`模糊匹配到`:lang`，那么将会把`lang`这个参数赋值为`go`，继续下一层匹配。
