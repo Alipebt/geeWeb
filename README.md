@@ -284,7 +284,7 @@ s2 := fmt.Sprintf("Value: %d", 42) // s2 = "Value: 42"
 │   └── /doc
 ├── /about
 └── /p
-    ├── /blog
+     ├── /blog
 	└── /related
 ```
 
@@ -300,3 +300,40 @@ type node struct {
 ```
 
 为了实现动态路由匹配，加上了`isWild`这个参数。即当我们匹配 `/p/go/doc/`这个路由时，第一层节点，`p`精准匹配到了`p`，第二层节点，`go`模糊匹配到`:lang`，那么将会把`lang`这个参数赋值为`go`，继续下一层匹配。
+
+```go
+func (n *node) matchChild(part string) *node {
+	for _, child := range n.children {
+		if child.part == part || child.isWild {
+			return child
+		}
+	}
+	return nil
+}
+
+func (n *node) insert(pattern string, parts []string, height int) {
+	if len(parts) == height {
+		n.pattern = pattern
+		return
+	}
+
+	part := parts[height]
+	child := n.matchChild(part)
+	if child == nil {
+		child = &node{
+			part:   part,
+			isWild: part[0] == ':' || part[0] == '*',
+		}
+		n.children = append(n.children, child)
+	}
+	child.insert(pattern, parts, height+1)
+}
+```
+
+该代码段接收三个参数，`pattern`(路由路径)，`parts`(通过 `/` 分隔开的路径片段)，`height`(当前的高度，与parts的个数作比较)。
+
+首先判断当前`parts`是否已经被完全遍历过了，如果是，那么就将 `pattern` 的值赋给当前节点 `n` 的 `pattern` 字段，并返回。当 `parts` 切片被遍历完时，我们就已经将 `pattern` 插入到了 Trie 树中。
+
+如果parts还没有被完全遍历，则取出当前`height`的`part`作为被对比的字符串，并在当前节点遍历查找子节点是否为`part`或者为模糊匹配`:`和`*`。如果子节点不存在，则创建一个新的子节点。如果当前子节点为模糊匹配，则直接设置`isWild`为true，以便能进入该`part`的下一级。最后将这个节点加入到当前节点的`children`数组中。
+
+接着，函数对该子节点进行递归调用，同时传入 `pattern`、`parts` 和 `height+1` 作为参数。递归调用的目的是将 `pattern` 插入到以该子节点为根节点的子树中。
