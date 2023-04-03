@@ -1,5 +1,7 @@
 package gee
 
+import "strings"
+
 /*
 
 /
@@ -14,10 +16,10 @@ package gee
 */
 
 type node struct {
-	pattern 	string // 待匹配路由，如 /p/:lang
-	part		string // 路由中的一部分，如 :lang
-	children	[]*node // 子节点，如[doc,tutorial,intro]
-	isWild		bool // 是否精确匹配，part 含有 ：或 * 时为true
+	pattern  string  // 待匹配路由，如 /p/:lang
+	part     string  // 路由中的一部分，如 :lang
+	children []*node // 子节点，如[doc,tutorial,intro]
+	isWild   bool    // 是否精确匹配，part 含有 ：或 * 时为true
 }
 
 // 第一个匹配成功的节点，用于插入
@@ -51,10 +53,31 @@ func (n *node) insert(pattern string, parts []string, height int) {
 	child := n.matchChild(part)
 	if child == nil {
 		child = &node{
-			part: part,
+			part:   part,
 			isWild: part[0] == ':' || part[0] == '*',
 		}
 		n.children = append(n.children, child)
 	}
 	child.insert(pattern, parts, height+1)
+}
+
+func (n *node) search(parts []string, height int) *node {
+	if len(parts) == height || strings.HasPrefix(n.part, "*") {
+		if n.pattern == "" {
+			return nil
+		}
+		return n
+	}
+
+	part := parts[height]
+	children := n.metchChildren(part)
+
+	for _, child := range children {
+		result := child.search(parts, height+1)
+		if result != nil {
+			return result
+		}
+	}
+
+	return nil
 }
