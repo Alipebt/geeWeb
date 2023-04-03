@@ -337,3 +337,46 @@ func (n *node) insert(pattern string, parts []string, height int) {
 如果parts还没有被完全遍历，则取出当前`height`的`part`作为被对比的字符串，并在当前节点遍历查找子节点是否为`part`或者为模糊匹配`:`和`*`。如果子节点不存在，则创建一个新的子节点。如果当前子节点为模糊匹配，则直接设置`isWild`为true，以便能进入该`part`的下一级。最后将这个节点加入到当前节点的`children`数组中。
 
 接着，函数对该子节点进行递归调用，同时传入 `pattern`、`parts` 和 `height+1` 作为参数。递归调用的目的是将 `pattern` 插入到以该子节点为根节点的子树中。
+
+```go
+func (n *node) metchChildren(part string) []*node {
+	nodes := make([]*node, 0)
+	for _, child := range n.children {
+		if child.part == part || child.isWild {
+			nodes = append(nodes, child)
+		}
+	}
+	return nodes
+}
+
+func (n *node) search(parts []string, height int) *node {
+	if len(parts) == height || strings.HasPrefix(n.part, "*") {
+		if n.pattern == "" {
+			return nil
+		}
+		return n
+	}
+
+	part := parts[height]
+	children := n.metchChildren(part)
+
+	for _, child := range children {
+		result := child.search(parts, height+1)
+		if result != nil {
+			return result
+		}
+	}
+
+	return nil
+}
+```
+
+函数首先判断当前函数是否已经遍历到了 `parts` 切片的末尾或者当前节点的键名以 `*` 开头。如果是，那么就判断当前节点 `n` 的 `pattern` 字段是否为空。如果为空，则说明该节点并没有被插入任何真实的模式字符串，返回 `nil` 
+
+如果当前节点不满足终止条件，函数会取出 `parts` 中第 `height` 个元素作为键名 `part`，然后在当前节点 `n` 的子节点数组中查找所有键名与 `part` 匹配的子节点，返回一个子节点数组 `children`。
+
+接着，函数对 `children` 数组中的每一个子节点进行递归调用
+
+如果递归调用 `result` 返回的结果不为空，说明已经找到了匹配的节点，直接返回该结果即可，否则继续循环查找下一个节点。
+
+最终，如果整个 `children` 数组都被遍历过了，那么说明 Trie 树中并没有匹配的节点，函数返回 `nil` 表示未查询到结果。
