@@ -20,7 +20,7 @@ type Context struct {
 	StatusCode int
 }
 
-func (c *Context) params(key string) string {
+func (c *Context) Param(key string) string {
 	value, _ := c.Params[key]
 	return value
 }
