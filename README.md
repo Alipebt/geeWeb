@@ -380,3 +380,67 @@ func (n *node) search(parts []string, height int) *node {
 如果递归调用 `result` 返回的结果不为空，说明已经找到了匹配的节点，直接返回该结果即可，否则继续循环查找下一个节点。
 
 最终，如果整个 `children` 数组都被遍历过了，那么说明 Trie 树中并没有匹配的节点，函数返回 `nil` 表示未查询到结果。
+
+```go
+func (r *router) getRoute(method string, path string) (*node, map[string]string) {
+	searchPaths := parsePattern(path)
+	params := make(map[string]string)
+	root, ok := r.roots[method]
+	
+	if !ok {
+		return nil, nil
+	}
+
+	n :=root.search(searchPaths, 0)
+
+	if n != nil {
+		parts :=parsePattern(n.pattern)
+		for index, part := range parts {
+			if part[0] == ':' {
+				params[part[1:]] = searchPaths[index]
+			}
+			if part[0] == '*' && len(part) > 1 {
+				params[part[1:]] = strings.Join(searchPaths[index:], "/")
+				break
+			}
+		}
+		return n, params
+	}
+	return nil, nil
+}
+```
+
+这段代码是一个`router`类型的方法，接受两个字符串参数`method`和`path`，返回两个值：第一个值是一个指向节点的指针，第二个值是一个命名参数的映射表。具体流程如下：
+
+1. 将传递进来的path进行解析，解析成一个路径数组searchPaths。
+2. 创建一个空的命名参数映射表params。
+3. 从路由树中查找对应的method的根节点，如果没有找到则返回nil，nil。
+4. 调用根节点的search方法，在树中搜索满足给定路径的最后一个节点，如果找到了，则将其pattern按照解析路径之后的格式解析成一个parts数组。
+5. 对于parts数组中每一个以":"开头的部分而言，将其添加到params命名参数映射表中。
+6. 对于parts数组中每一个以"*"开头的部分而言，将其余部分拼接起来，并将其添加到params命名参数映射表中作为该参数的值。
+7. 返回找到的节点和参数映射表。若未找到，则返回nil，nil。
+
+`params`是一个命名参数的映射表，其中key表示命名参数的名称，value表示命名参数的值。例如当路由中包含像`:name`或者`*file`这样的占位符时，对应的参数会被提取出来，并加到映射表`params`中。
+
+`pattern`是路由规则的字符串表示形式，而`path`是请求URL的实际路径。它们之间的关系是，路由规则中定义的占位符（如`:name`或`*file`）可以匹配到请求URL中相应的部分，从而提取出相应的参数。
+
+以下是一个示例：
+
+假设我们有一个路径规则 `/user/:id/*path`， 它允许任何以 `/user/` 开头的请求通过，并提取 URL 中的 `id` 和 `path` 两个参数。 如果路径为 `/user/123/file/filename.zip`，则路由器根据 `/user/:id/*path`找到节点并解析出命名参数：
+
+```go
+params = map[string]string{
+    "id":   "123",
+    "path": "file/filename.zip",
+}
+```
+
+可以看到，路由规则中的 `:id` 和 `*path` 已经被匹配了相应的参数值。
+
+在路由匹配中，`pattern` 和 `path` 的关系是一个匹配的过程。
+
+`pattern` 是指声明路由规则时的模式，定义了一个 URL 匹配的模板。比如 `/users/:id` 就是一个模式，其中 `:id` 表示一个路径参数，它将匹配任意字符，直到遇到下一个斜杠为止。
+
+`path` 是指浏览器地址栏中实际输入的 URL 路径部分。当请求到来时，会将 `path` 与路由模式中的 `pattern` 进行匹配，以确定该请求应该由哪个路由处理。
+
+如果 `path` 成功匹配到一个适合的 `pattern`，则路由程序将按照该 `pattern` 的规则处理匹配到的路径参数，并执行该路由的回调函数或加载对应的组件。如果没有找到匹配的路由，则可以显示 404 页面或者跳转到默认页面。
