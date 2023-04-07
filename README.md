@@ -123,7 +123,7 @@ https://www.example.com:8080/path/to/myfile.html?key1=valu
 
 ## 3 geeWeb
 
-### 3.1 gee.go
+### 3.1 http基础（gee.go）
 
 ```go
 type HandlerFunc func(http.ResponseWriter, *http.Request)
@@ -169,7 +169,7 @@ func (engine *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 该方法首先从请求（`req`）中获取1）HTTP 请求方法（`Method`）和URI 路径（`URL.Path`），然后将二者组合成一个 `key` 字符串，用于在存储路由处理程序的映射表中查找对应的处理函数。
 
-### 3.2 context.go
+### 3.2 上下文（context.go）
 
 #### 3.2.1 Context结构体 
 
@@ -272,9 +272,7 @@ s2 := fmt.Sprintf("Value: %d", 42) // s2 = "Value: 42"
 
 注意到在 `String` 方法中，最后使用了 `values...` 语法，将该可变参数 `values` 展开为多个参数，这是因为 `Sprintf` 函数所需的是一个不定数量的 `interface{}` 参数而不是一个切片，因此需要使用 `...` 语法展开参数。
 
-### 3.3 trie.go
-
-#### 3.3.1 前缀树
+### 3.3 前缀树路由（ trie.go ）
 
 ```shell
 /
@@ -444,3 +442,35 @@ params = map[string]string{
 `path` 是指浏览器地址栏中实际输入的 URL 路径部分。当请求到来时，会将 `path` 与路由模式中的 `pattern` 进行匹配，以确定该请求应该由哪个路由处理。
 
 如果 `path` 成功匹配到一个适合的 `pattern`，则路由程序将按照该 `pattern` 的规则处理匹配到的路径参数，并执行该路由的回调函数或加载对应的组件。如果没有找到匹配的路由，则可以显示 404 页面或者跳转到默认页面。
+
+### 3.4 分组控制
+
+#### 3.4.1 分组的意义
+
+分组控制(Group Control)是 Web 框架应提供的基础功能之一。真实的业务场景中，往往某一组路由需要相似的处理。例如：
+
+- 以`/post`开头的路由匿名可访问。
+- 以`/admin`开头的路由需要鉴权。
+- 以`/api`开头的路由是 RESTful 接口，可以对接第三方平台，需要三方平台鉴权。
+
+大部分情况下的路由分组，是以相同的前缀来区分的。例如`/post`是一个分组，`/post/a`和`/post/b`可以是该分组下的子分组。作用在`/post`分组上的中间件(middleware)，也都会作用在子分组，子分组还可以应用自己特有的中间件。
+
+#### 3.4.2 Group对象
+
+一个`Group`对象需要具备以下属性：
+
+- 前缀(prefix)，比如`/`，或者`/api`
+- 父节点(parent)，以供支持分组嵌套
+- 中间件(middlewares)，中间件是应用在分组上的
+
+如果Group对象需要直接映射路由规则的话，比如我们想在使用框架时，这么调用：
+
+```go
+r := gee.New()
+v1 := r.Group("/v1")
+v1.GET("/", func(c *gee.Context) {
+	c.HTML(http.StatusOK, "<h1>Hello Gee</h1>")
+})
+```
+
+那么Group对象，还需要有访问`Router`的能力，为了方便，我们可以在Group中，保存一个指针，指向`Engine`，整个框架的所有资源都是由`Engine`统一协调的，那么就可以通过`Engine`间接地访问各种接口了。
